@@ -6,6 +6,10 @@ using Application.Room.DTO;
 using Domain.Room.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Application.Room.Responses;
+using MediatR;
+using Application.Booking.Commands;
+using Application.Room.Commands;
+using Application.Room.Queries;
 
 namespace API.Controllers
 {
@@ -15,21 +19,23 @@ namespace API.Controllers
     {
         private readonly ILogger<RoomController> _logger;
         private readonly IRoomManager _roomManager;
+        private readonly IMediator _mediator;
 
-        public RoomController(ILogger<RoomController> logger, IRoomManager roomManager)
+        public RoomController(ILogger<RoomController> logger, IRoomManager roomManager, IMediator mediator)
         {
             _logger = logger;
             _roomManager = roomManager;
+            _mediator = mediator;
         }
 
         [HttpPost]
         public async Task<ActionResult<RoomDto>> Post(RoomDto room)
         {
-            var request = new CreateRoomRequest
+            var command = new CreateRoomCommand
             {
-                Data = room
+                RoomDto = room
             };
-            var res = await _roomManager.CreateRoom(request);
+            var res = await _mediator.Send(command);
 
             if (res.Success) return Created("", res.Data);
 
@@ -47,7 +53,12 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<RoomDto>> Get(int roomId)
         {
-            var res = await _roomManager.GetRoom(roomId);
+            var query = new GetRoomQuery
+            {
+                RoomId = roomId
+            };
+
+            var res = await _mediator.Send(query);
 
             if (res.Success) return Created("", res.Data);
 

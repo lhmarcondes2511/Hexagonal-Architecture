@@ -1,4 +1,5 @@
 ﻿using Domain.Booking.Enums;
+using System.ComponentModel.DataAnnotations;
 using EntitiesBooking = Domain.Booking.Entities;
 using EntitiesGuest = Domain.Guest.Entities;
 using EntitiesRoom = Domain.Room.Entities;
@@ -16,8 +17,11 @@ namespace Application.Booking.DTO
         public DateTime PlacedAt { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
-        //public Status Status { get; set; }
+        public Status Status { get; set; }
+
+        [Required]
         public int RoomId { get; set; }
+        [Required]
         public int GuestId { get; set; }
 
         public static EntitiesBooking.Booking MapToEntity(BookingDto bookingDto)
@@ -48,8 +52,7 @@ namespace Application.Booking.DTO
                 End = booking.End,
                 GuestId = booking.Guest.Id,
                 RoomId = booking.Room.Id,
-                //Status = booking.Status
-
+                Status = booking.Status
             };
         }
     }

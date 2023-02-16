@@ -36,9 +36,7 @@ namespace Application.Room.DTO
                 Id = room.Id,
                 Name = room.Name,
                 Level = room.Level,
-                InMaintenance = room.InMaintenance,
-                Value = room.Price.Value,
-                Currency = (int)room.Price.Currency,
+                InMaintenance = room.InMaintenance
             };
         }
     }

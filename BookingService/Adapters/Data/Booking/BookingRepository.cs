@@ -1,6 +1,7 @@
 ﻿using Entities = Domain.Booking.Entities;
 using Domain.Booking.Ports;
 using Microsoft.EntityFrameworkCore;
+using Domain.Room.Entities;
 
 namespace Data.Booking
 {
@@ -13,16 +14,16 @@ namespace Data.Booking
             _context = hotelDbContext;
         }
 
-        public async Task<int> CreateBooking(Entities.Booking booking)
+        public async Task<Entities.Booking> CreateBooking(Entities.Booking booking)
         {
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
-            return booking.Id;
+            return booking;
         }
 
         public Task<Entities.Booking?> Get(int Id)
         {
-            return _context.Bookings.Where(x => x.Id == Id).FirstOrDefaultAsync();
+            return _context.Bookings.Include(x => x.Guest).Include(x => x.Room).Where(x => x.Id == Id).FirstOrDefaultAsync();
         }
     }
 }

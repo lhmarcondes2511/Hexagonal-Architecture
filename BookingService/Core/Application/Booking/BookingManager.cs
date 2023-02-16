@@ -27,25 +27,25 @@ namespace Application.Booking
             _paymentProcessorFactory = paymentProcessorFactory;
         }
 
-        public async Task<BookingResponse> CreateBooking(CreateBookingRequest request)
+        public async Task<BookingResponse> CreateBooking(BookingDto request)
         {
             try
             {
-                var booking = BookingDto.MapToEntity(request.Data);
-                booking.Guest = await _guestRepository.Get(request.Data.GuestId);
-                booking.Room = await _roomRepository.GetAggregate(request.Data.RoomId);
+                var booking = BookingDto.MapToEntity(request);
+                booking.Guest = await _guestRepository.Get(request.GuestId);
+                booking.Room = await _roomRepository.GetAggregate(request.RoomId);
 
                 await booking.Save(_bookingRepository);
 
-                request.Data.Id = booking.Id;
+                request.Id = booking.Id;
 
                 return new BookingResponse
                 {
-                    Data = request.Data,
+                    Data = request,
                     Success = true,
                 };
             }
-            catch(PlacedAllsRequiredInformationException e)
+            catch(PlacedAtIsARequiredInformationException e)
             {
                 return new BookingResponse
                 {

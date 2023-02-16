@@ -1,6 +1,8 @@
 ﻿using Application.Booking;
+using Application.Booking.Commands;
 using Application.Booking.DTO;
 using Application.Booking.Ports;
+using Application.Booking.Queries;
 using Application.Booking.Requests;
 using Application.Guest.Requests;
 using Application.Payment.DTO;
@@ -8,6 +10,7 @@ using Application.Payment.Responses;
 using Application.Responses;
 using Application.Room.DTO;
 using Domain.Guest.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -18,10 +21,12 @@ namespace API.Controllers
     {
         private readonly ILogger<GuestController> _logger;
         private readonly IBookingManager _bookManager;
-        public BookingController(ILogger<GuestController> logger, IBookingManager bookingManager)
+        private readonly IMediator _mediator;
+        public BookingController(ILogger<GuestController> logger, IBookingManager bookingManager, IMediator mediator)
         {
             _logger = logger;
             _bookManager = bookingManager;
+            _mediator = mediator;
         }
 
         [HttpPost]
@@ -40,11 +45,12 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<BookingDto>> Post(BookingDto booking)
         {
-            var request = new CreateBookingRequest
+            var command = new CreateBookingCommand
             {
-                Data = booking
+                BookingDto = booking,
             };
-            var res = await _bookManager.CreateBooking(request);
+
+            var res = await _mediator.Send(command);
 
             if (res.Success) return Created("", res.Data);
 
@@ -62,11 +68,17 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<BookingDto>> Get(int bookingId)
         {
-            var res = await _bookManager.GetBooking(bookingId);
+            var query = new GetBookingQuery
+            {
+                Id = bookingId
+            };
+
+            var res = await _mediator.Send(query);
 
             if (res.Success) return Created("", res.Data);
 
-            return NotFound(res);
+            _logger.LogError("Could not process the request", res);
+            return BadRequest(res);
         }
     }
 }

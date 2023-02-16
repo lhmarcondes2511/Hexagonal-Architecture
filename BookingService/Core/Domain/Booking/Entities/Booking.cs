@@ -51,37 +51,53 @@ namespace Domain.Booking.Entities
             }
         }
 
-        private void ValidateState() 
+        private void ValidateState()
         {
-            if(PlacedAt == default(DateTime) ||
-               Start == default(DateTime) ||
-               End == default(DateTime) ||
-               Room == null ||
-               Guest == null)
+            if (this.PlacedAt == default(DateTime))
             {
-                throw new PlacedAllsRequiredInformationException();
+                throw new PlacedAtIsARequiredInformationException();
             }
 
-            Guest.IsValid();
-
-            if (Room.CanBeBooked())
+            if (this.Start == default(DateTime))
             {
-                throw new RoomCannotBeBookingException();
+                throw new StartDateTimeIsRequiredException();
             }
 
+            if (this.End == default(DateTime))
+            {
+                throw new EndDateTimeIsRequiredException();
+            }
+
+            if (this.Room == null)
+            {
+                throw new RoomIsRequiredException();
+            }
+
+            if (this.Guest == null)
+            {
+                throw new GuestIsRequiredException();
+            }
         }
 
         public async Task Save(IBookingRepository bookingRepository)
         {
-            this.IsValid();
+            this.ValidateState();
 
-            if (Id == 0)
+            this.Guest.IsValid();
+
+            if (!this.Room.CanBeBooked())
             {
-                Id = await bookingRepository.CreateBooking(this);
+                throw new RoomCannotBeBookedException();
+            }
+
+            if (this.Id == 0)
+            {
+                var resp = await bookingRepository.CreateBooking(this);
+                this.Id = resp.Id;
             }
             else
             {
-                //await guestRepository.Update(this);
+
             }
         }
     }
